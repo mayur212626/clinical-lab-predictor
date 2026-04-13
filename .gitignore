@@ -1,0 +1,47 @@
+# Data — never commit raw or processed data to git
+data/
+*.csv
+*.xlsx
+
+# Trained model files — too large for git, use DVC or artifact storage
+models/*.pkl
+models/*.pt
+models/*.tar.gz
+models/*.joblib
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# MLflow runs (can get large fast)
+mlruns/
+
+# Monitoring logs
+monitoring/predictions.jsonl
+
+# AWS — NEVER commit credentials
+.aws/
+*.pem
+*.key
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+
+# Keep these even though they live in docs/
+!docs/*.md
+!docs/*.json
