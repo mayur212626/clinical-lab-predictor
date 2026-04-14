@@ -40,10 +40,10 @@ def load_model_and_scaler():
 
 
 @st.cache_resource
-def load_shap_explainer(model):
+def load_shap_explainer(_model):
     try:
         import shap
-        return shap.TreeExplainer(model)
+        return shap.TreeExplainer(_model)
     except Exception:
         return None
 
