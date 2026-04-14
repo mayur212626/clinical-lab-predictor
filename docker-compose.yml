@@ -1,0 +1,94 @@
+version: "3.9"
+
+# Four services that make up the full stack:
+#   api           — FastAPI prediction endpoint
+#   dashboard     — Streamlit UI with SHAP explainability
+#   mlflow        — Experiment tracking UI
+#   drift-monitor — Runs every hour to check for data drift
+
+services:
+
+  api:
+    build: .
+    container_name: lab-predictor-api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./docs:/app/docs
+      - ./monitoring:/app/monitoring
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    container_name: lab-predictor-dashboard
+    # --server.fileWatcherType none disables the Streamlit file watcher
+    # which causes issues in Docker on some systems
+    command: >
+      streamlit run src/dashboard.py
+      --server.port 8501
+      --server.address 0.0.0.0
+      --server.fileWatcherType none
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./docs:/app/docs
+      - ./monitoring:/app/monitoring
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  mlflow:
+    image: python:3.10-slim
+    container_name: lab-predictor-mlflow
+    # SQLite backend keeps it simple — swap for Postgres for production
+    command: >
+      bash -c "pip install mlflow --quiet &&
+               mlflow server
+               --host 0.0.0.0
+               --port 5000
+               --backend-store-uri sqlite:///mlflow.db
+               --default-artifact-root /mlruns"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_runs:/mlruns
+      - mlflow_db:/mlflow.db
+    restart: unless-stopped
+
+  drift-monitor:
+    build: .
+    container_name: lab-predictor-drift
+    # Check for drift once an hour. In production you'd probably want
+    # to run this as a proper scheduled job (cron, Airflow, etc.)
+    command: >
+      bash -c "while true; do
+        echo '--- Running drift check ---';
+        python src/drift_monitor.py;
+        echo '--- Done. Sleeping 1 hour ---';
+        sleep 3600;
+      done"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./monitoring:/app/monitoring
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  mlflow_runs:
+  mlflow_db:
