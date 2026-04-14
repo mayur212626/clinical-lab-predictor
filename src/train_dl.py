@@ -81,7 +81,7 @@ def make_loaders(X_train, y_train, X_test, y_test):
 def train(model, train_loader, test_loader):
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.5, verbose=False)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.5)
 
     best_val_loss = float("inf")
     no_improve    = 0
@@ -164,7 +164,7 @@ def evaluate(model, test_loader):
         "auc_roc":   round(auc, 4),
         "accuracy":  round(rep["accuracy"], 4),
         "f1_weighted": round(rep["weighted avg"]["f1-score"], 4),
-        "recall_positive": round(rep["1"]["recall"], 4),
+        "recall_positive": round(rep.get("1", rep.get(1, {})).get("recall", 0), 4),
     }
     log.info(f"Final test AUC:  {metrics['auc_roc']}")
     log.info(f"Final accuracy:  {metrics['accuracy']}")
