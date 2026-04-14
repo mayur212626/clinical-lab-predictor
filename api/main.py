@@ -258,3 +258,4 @@ def monitoring_summary():
         "max_probability":  round(max(probs), 4),
         "last_seen":        rows[-1]["ts"],
     }
+# monitoring endpoint added 
