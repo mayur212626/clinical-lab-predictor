@@ -154,7 +154,7 @@ AUC fairness gap: {entry['evaluation'].get('auc_fairness_gap', 'N/A')}
 - Data fingerprint: `{entry['data_hash']}`
 """
 
-    with open("docs/model_card.md", "w") as f:
+    with open("docs/model_card.md", "w", encoding="utf-8") as f:
         f.write(card)
     log.info("Model card written → docs/model_card.md")
 
