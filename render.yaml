@@ -1,0 +1,9 @@
+﻿services:
+  - type: web
+    name: clinical-lab-predictor
+    runtime: python
+    buildCommand: python -m pip install -r requirements-deploy.txt && python src/data_curation.py && python src/feature_engineering.py && python src/train_rf.py
+    startCommand: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
