@@ -1,0 +1,9 @@
+﻿pandas
+numpy
+scikit-learn
+scipy
+joblib
+fastapi
+uvicorn
+pydantic
+python-dotenv
